@@ -1,10 +1,17 @@
 package chess;
 
-
-import chess.pieces.*;
-
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import chess.pieces.Bishop;
+import chess.pieces.King;
+import chess.pieces.Knight;
+import chess.pieces.Pawn;
+import chess.pieces.Piece;
+import chess.pieces.Queen;
+import chess.pieces.Rook;
 
 /**
  * Class that represents the current state of the game.  Basically, what pieces are in which positions on the
@@ -26,7 +33,7 @@ public class GameState {
      * Create the game state.
      */
     public GameState() {
-        positionToPieceMap = new HashMap<Position, Piece>();
+        positionToPieceMap = new HashMap<>();
     }
 
     public Player getCurrentPlayer() {
@@ -76,6 +83,7 @@ public class GameState {
 
     /**
      * Get the piece at the position specified by the String
+     *
      * @param colrow The string indication of position; i.e. "d5"
      * @return The piece at that position, or null if it does not exist.
      */
@@ -86,6 +94,7 @@ public class GameState {
 
     /**
      * Get the piece at a given position on the board
+     *
      * @param position The position to inquire about.
      * @return The piece at that position, or null if it does not exist.
      */
@@ -94,11 +103,73 @@ public class GameState {
     }
 
     /**
+     * @return Get all possible moves
+     */
+    public Stream<Move> moves() {
+        return positionToPieceMap.entrySet().stream()
+                .map(e -> e.getValue().getPossibleMoves(e.getKey()))
+                .flatMap(Function.identity())
+                .filter(this::isValidMove);
+    }
+
+    /**
+     * Method to move a piece from a given position to next position
+     *
+     * @param from The place of piece to move
+     * @param to   The place where to move
+     * @return true if move was successful, false otherwise
+     */
+    public boolean move(Position from, Position to) {
+        Piece piece = getPieceAt(from);
+        if (piece != null) {
+            final Move move = new Move(from, to);
+            if (piece.getPossibleMoves(from).filter(this::isValidMove).anyMatch(m -> m.equals(move))) {
+                placePiece(positionToPieceMap.remove(move.getFrom()), move.getTo());
+                changePlayer();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return true if game is over by checkmate, false otherwise
+     */
+    public boolean isCheckMate() {
+        return false;
+    }
+
+    /**
+     * @return true if game is over by draw, false otherwise
+     */
+    public boolean isDraw() {
+        return false;
+    }
+
+    /**
      * Method to place a piece at a given position
-     * @param piece The piece to place
+     *
+     * @param piece    The piece to place
      * @param position The position
      */
     private void placePiece(Piece piece, Position position) {
         positionToPieceMap.put(position, piece);
+    }
+
+    /**
+     * Changes {@link #currentPlayer} to opponent
+     */
+    private void changePlayer() {
+        currentPlayer = currentPlayer == Player.White ? Player.Black : Player.White;
+    }
+
+    /**
+     * Verifies if specified move is valid and can be executed
+     *
+     * @param move {@link Move}
+     * @return true if move is valid
+     */
+    private boolean isValidMove(Move move) {
+        return true;
     }
 }

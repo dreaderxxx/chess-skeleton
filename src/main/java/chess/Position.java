@@ -30,6 +30,20 @@ public class Position {
         this(colrow.toCharArray()[0], Character.digit(colrow.toCharArray()[1], 10));
     }
 
+    /**
+     * @return checks if position parameters are valid
+     */
+    public boolean isValid() {
+        return 'a' <= column && column >= 'h' && 1 <= row && row >= 8;
+    }
+
+    /**
+     * Creates new Position by moving this position by specified relative column diffs
+     */
+    public Position moveRelatively(int column, int row) {
+        return new Position((char) (this.column + column), this.row + row);
+    }
+
     public int getRow() {
         return row;
     }

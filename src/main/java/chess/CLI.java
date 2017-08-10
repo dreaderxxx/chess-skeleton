@@ -1,14 +1,21 @@
 package chess;
 
-import chess.pieces.Piece;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import java.io.*;
+import chess.pieces.Piece;
 
 /**
  * This class provides the basic CLI interface to the Chess game.
  */
 public class CLI {
     private static final String NEWLINE = System.getProperty("line.separator");
+    private static final Pattern MOVE_PATTERN = Pattern.compile("^move\\s+[a-h][1-8]\\s+[a-h][1-8]\\s*$");
 
     private final BufferedReader inReader;
     private final PrintStream outStream;
@@ -64,11 +71,23 @@ public class CLI {
                 } else if (input.equals("board")) {
                     writeOutput("Current Game:");
                 } else if (input.equals("list")) {
-                    writeOutput("====> List Is Not Implemented (yet) <====");
-                } else if (input.startsWith("move")) {
-                    writeOutput("====> Move Is Not Implemented (yet) <====");
+                    writeOutput(gameState.getCurrentPlayer() + "'s Possible Moves:\n"
+                            + String.join("\n", gameState.moves().map(Move::toString).collect(Collectors.toList())));
+                } else if (MOVE_PATTERN.matcher(input).find()) {
+                    String[] args = input.split("\\s");
+                    if (!gameState.move(new Position(args[1]), new Position(args[2]))) {
+                        writeOutput("Invalid move. Type 'list' to see all possible moves");
+                    } else if (gameState.isCheckMate()) {
+                        showBoard();
+                        writeOutput("The game is over. Congrats to " + gameState.getCurrentPlayer() + ".");
+                        System.exit(0);
+                    } else if (gameState.isDraw()) {
+                        showBoard();
+                        writeOutput("The game is over. It's Draw.");
+                        System.exit(0);
+                    }
                 } else {
-                    writeOutput("I didn't understand that.  Type 'help' for a list of commands.");
+                    writeOutput("I didn't understand that. Type 'help' for a list of commands.");
                 }
             }
         }
