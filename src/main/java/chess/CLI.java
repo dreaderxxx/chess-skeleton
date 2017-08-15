@@ -79,7 +79,7 @@ public class CLI {
                         writeOutput("Invalid move. Type 'list' to see all possible moves");
                     } else if (gameState.isCheckMate()) {
                         showBoard();
-                        writeOutput("The game is over. Congrats to " + gameState.getCurrentPlayer() + ".");
+                        writeOutput("The game is over. Congrats to " + gameState.getNextPlayer() + ".");
                         System.exit(0);
                     } else if (gameState.isDraw()) {
                         showBoard();

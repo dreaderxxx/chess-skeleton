@@ -1,17 +1,11 @@
 package chess;
 
+import chess.pieces.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import chess.pieces.Bishop;
-import chess.pieces.King;
-import chess.pieces.Knight;
-import chess.pieces.Pawn;
-import chess.pieces.Piece;
-import chess.pieces.Queen;
-import chess.pieces.Rook;
 
 /**
  * Class that represents the current state of the game.  Basically, what pieces are in which positions on the
@@ -39,6 +33,11 @@ public class GameState {
     public Player getCurrentPlayer() {
         return currentPlayer;
     }
+
+    public Player getNextPlayer() {
+        return currentPlayer == Player.White ? Player.Black : Player.White;
+    }
+
 
     /**
      * Call to initialize the game state into the starting positions
@@ -106,10 +105,7 @@ public class GameState {
      * @return Get all possible moves
      */
     public Stream<Move> moves() {
-        return positionToPieceMap.entrySet().stream()
-                .map(e -> e.getValue().getPossibleMoves(e.getKey()))
-                .flatMap(Function.identity())
-                .filter(this::isValidMove);
+        return getAllMovesForPlayer(getCurrentPlayer()).filter(this::isValidMove);
     }
 
     /**
@@ -121,11 +117,10 @@ public class GameState {
      */
     public boolean move(Position from, Position to) {
         Piece piece = getPieceAt(from);
-        if (piece != null) {
+        if (piece != null && piece.getOwner() == getCurrentPlayer()) {
             final Move move = new Move(from, to);
-            if (piece.getPossibleMoves(from).filter(this::isValidMove).anyMatch(m -> m.equals(move))) {
-                placePiece(positionToPieceMap.remove(move.getFrom()), move.getTo());
-                changePlayer();
+            if (piece.getPossibleMoves(from, this).filter(this::isValidMove).anyMatch(m -> m.equals(move))) {
+                doMove(move);
                 return true;
             }
         }
@@ -136,14 +131,32 @@ public class GameState {
      * @return true if game is over by checkmate, false otherwise
      */
     public boolean isCheckMate() {
-        return false;
+        return moves().count() == 0 && isCheck(this, getNextPlayer());
     }
 
     /**
      * @return true if game is over by draw, false otherwise
      */
     public boolean isDraw() {
-        return false;
+        return moves().count() == 0 && !isCheck(this, getNextPlayer());
+    }
+
+    private boolean isCheck(GameState gameState, Player player) {
+        return gameState.getAllMovesForPlayer(player)
+                .anyMatch(m -> gameState.getPieceAt(m.getTo()) != null
+                        && gameState.getPieceAt(m.getTo()) instanceof King);
+    }
+
+    private void doMove(Move move) {
+        placePiece(positionToPieceMap.remove(move.getFrom()), move.getTo());
+        changePlayer();
+    }
+
+    private Stream<Move> getAllMovesForPlayer(final Player player) {
+        return positionToPieceMap.entrySet().stream()
+                .filter(e -> e.getValue().getOwner() == player)
+                .map(e -> e.getValue().getPossibleMoves(e.getKey(), this))
+                .flatMap(Function.identity());
     }
 
     /**
@@ -160,16 +173,25 @@ public class GameState {
      * Changes {@link #currentPlayer} to opponent
      */
     private void changePlayer() {
-        currentPlayer = currentPlayer == Player.White ? Player.Black : Player.White;
+        currentPlayer = getNextPlayer();
     }
 
     /**
-     * Verifies if specified move is valid and can be executed
+     * Verifies if specified move is valid(king is not under attack) and can be executed
      *
      * @param move {@link Move}
-     * @return true if move is valid
+     * @return true if move is valid(king is not under attack)
      */
     private boolean isValidMove(Move move) {
-        return true;
+        GameState copy = copyState();
+        copy.doMove(move);
+        return !isCheck(copy, copy.getCurrentPlayer());
+    }
+
+    private GameState copyState() {
+        GameState state = new GameState();
+        positionToPieceMap.forEach((position, piece) -> state.placePiece(piece, position));
+        state.currentPlayer = getCurrentPlayer();
+        return state;
     }
 }

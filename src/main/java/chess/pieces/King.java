@@ -2,6 +2,7 @@ package chess.pieces;
 
 import java.util.stream.Stream;
 
+import chess.GameState;
 import chess.Player;
 import chess.Position;
 
@@ -19,7 +20,7 @@ public class King extends Piece {
     }
 
     @Override
-    public Stream<Position> generatePositions(Position start) {
+    public Stream<Position> generatePositions(Position start, GameState gameState) {
         return Stream.of(
                 start.moveRelatively(-1, -1),
                 start.moveRelatively(-1, 0),

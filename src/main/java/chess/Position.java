@@ -34,7 +34,7 @@ public class Position {
      * @return checks if position parameters are valid
      */
     public boolean isValid() {
-        return 'a' <= column && column >= 'h' && 1 <= row && row >= 8;
+        return 'a' <= column && column <= 'h' && 1 <= row && row <= 8;
     }
 
     /**
