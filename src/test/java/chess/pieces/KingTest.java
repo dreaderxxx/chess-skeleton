@@ -10,13 +10,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 import chess.GameState;
 
 @RunWith(MockitoJUnitRunner.class)
-public class KnightTest extends AbstractPieceTest {
+public class KingTest extends AbstractPieceTest {
 
     @Mock
     private GameState gameState;
 
     @Test
     public void testMoves() {
-        checkPositions(gameState, "d4", new Knight(Black), "c6", "e6", "f5", "f3", "c2", "e2", "b3", "b5");
+        checkPositions(gameState, "d4", new King(Black), "c3", "c4", "c5", "d3", "d5", "e3", "e4", "e5");
     }
+
 }

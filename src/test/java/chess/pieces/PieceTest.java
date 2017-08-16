@@ -1,17 +1,18 @@
 package chess.pieces;
 
-import chess.GameState;
-import chess.Player;
-import chess.Position;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.util.stream.Stream;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.stream.Stream;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import chess.GameState;
+import chess.Player;
+import chess.Position;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PieceTest {
@@ -24,12 +25,12 @@ public class PieceTest {
     private GameState gameState;
 
     @Test
-    public void testFilterInvalidPositions() {
+    public void testFilter_InvalidPositions() {
         assertTrue(new TestPiece(null).getPossibleMoves(null, gameState).count() == 0);
     }
 
     @Test
-    public void testFilterFriendlyPiecePositions() {
+    public void testFilter_FriendlyPiecePositions() {
         when(gameState.getPieceAt(testPosition)).thenReturn(new Pawn(Player.White));
         when(testPosition.isValid()).thenReturn(true);
         when(gameState.getPieceAt(testPosition2)).thenReturn(new Pawn(Player.Black));
